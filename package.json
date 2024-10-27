@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start:dev": "nodemon ./index.js",
+    "start:dev": "nodemon",
     "lint": "eslint --fix ",
     "format:fix": "prettier --write --ignore-path .prettierignore ."
   },
@@ -26,6 +26,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "tsx": "^4.19.2",
     "ws": "^8.18.0"
   }
 }
