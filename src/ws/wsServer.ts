@@ -10,11 +10,10 @@ wss.on('connection', (ws, req) => {
   console.log('Websocket connection succesfully established.');
 
   ws.on('message', (rawMessage) => {
-    let msg=parseMessage(rawMessage.toString()) as WsEvent
+    let msg = parseMessage(rawMessage.toString()) as WsEvent;
     console.log('<--', 'Recieved from client', msg);
-    eventHandler(ws,msg)
-
-  })
+    eventHandler(ws, msg);
+  });
 });
 
 wss.on('close', function close() {

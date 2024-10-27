@@ -1,5 +1,5 @@
-import { generateId } from "src/utils/generateId";
-import { User } from "./user";
+import { generateId } from 'src/utils/generateId';
+import { User } from './user';
 
 export class Room {
   id: string;
@@ -7,6 +7,6 @@ export class Room {
 
   constructor(user: User) {
     this.id = generateId();
-    this.players = [user]
+    this.players = [user];
   }
 }

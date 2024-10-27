@@ -1,5 +1,5 @@
-import { generateId } from "src/utils/generateId";
-import { UserData } from "./types";
+import { generateId } from 'src/utils/generateId';
+import { UserData } from './types';
 
 export class User {
   name: string;

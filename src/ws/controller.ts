@@ -3,7 +3,10 @@ import { stringifyMessage } from 'src/utils/stringifyMessage';
 import { dataBase } from 'src/model/database';
 
 export class Controller {
-  clientsMap = new Map<string, WebSocket>();
+  clientsMap: Map<string, WebSocket>;
+  constructor() {
+    this.clientsMap = new Map<string, WebSocket>();
+  }
 
   sendToClient = (client: WebSocket, payload: Record<string, unknown>) => {
     if (client.readyState === WebSocket.OPEN) {
@@ -19,21 +22,21 @@ export class Controller {
   };
 
   sendToRoom = (userIds: string[], payload: Record<string, unknown>) => {
-   userIds.forEach(id => {
-    let currClient = this.clientsMap.get(id);
-    if (currClient) this.sendToClient(currClient, payload)
-})
+    userIds.forEach((id) => {
+      let currClient = this.clientsMap.get(id);
+      if (currClient) this.sendToClient(currClient, payload);
+    });
   };
 
-  setClient = ( userId: string, client: WebSocket) => {
+  setClient = (userId: string, client: WebSocket) => {
     this.clientsMap.set(userId, client);
   };
 
-  getClient = (client: WebSocket) =>  {
-  let clientId =  Array.from(this.clientsMap.entries()).find(([_, item]) => item===client);
-  let user = clientId && dataBase.users.find(user => user.id === clientId[0]) ;
-  return user
-}
-}
+  getClient = (client: WebSocket) => {
+    let clientId = Array.from(this.clientsMap.entries()).find(([_, item]) => item === client);
+    let user = clientId && dataBase.users.find((user) => user.id === clientId[0]);
+    return user;
+  };
 
-
+  getClientById = (userId: string) => this.clientsMap.get(userId);
+}
