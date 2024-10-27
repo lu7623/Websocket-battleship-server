@@ -1,17 +1,17 @@
 import { WS_PORT } from 'src/constants/constants';
 import { WsEvent } from 'src/model/types';
-import { generateId } from 'src/utils/generateId';
 import { WebSocketServer } from 'ws';
 import { eventHandler } from './handler';
+import { parseMessage } from 'src/utils/parseMessage';
 
 export const wss = new WebSocketServer({ port: WS_PORT });
 
 wss.on('connection', (ws, req) => {
   console.log('Websocket connection succesfully established.');
-console.log(generateId())
+
   ws.on('message', (rawMessage) => {
-    let msg=JSON.parse(rawMessage.toString()) as WsEvent
-    console.log(msg);
+    let msg=parseMessage(rawMessage.toString()) as WsEvent
+    console.log('<--', 'Recieved from client', msg);
     eventHandler(ws,msg)
 
   })

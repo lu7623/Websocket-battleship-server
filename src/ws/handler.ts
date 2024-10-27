@@ -3,54 +3,39 @@ import { Room } from "src/model/room";
 import { UserData, WsEvent } from "src/model/types";
 import { User } from "src/model/user";
 import WebSocket from 'ws';
+import { Controller } from "./controller";
+
+const clientController = new Controller();
 
 export const eventHandler = (ws:WebSocket, event:WsEvent) => {
     switch (event.type) {
         case 'reg' : 
-        console.log(event.data)
-        let {name, password} = JSON.parse(event.data as string) as UserData;
+
+        let {name, password} = event.data as UserData;
         let currUser =dataBase.users.find(user => user.name === name);
-       
+    
         if (currUser) {
             if (currUser.password === password) {
-                ws.send(JSON.stringify({
+                clientController.setClient(currUser.id, ws);
+                
+                clientController.sendToClient(ws, {
                     type: "reg",
-                    data: JSON.stringify({
+                    data: {
                       name:name,
                       index: currUser.id,
                       error: false,
                       errorText: ''
-                  }),
+                  },
                     id: 0,
                   })
-                )
-                ws.send(JSON.stringify({
+                  const winners = dataBase.users.map(currUser => ({
+                    name: currUser.name,
+                    wins: currUser.wins,
+                }))
+                  clientController.sendToAll({
                     type: "update_winners",
-                    data: JSON.stringify( [
-                        {
-                            name: currUser.name,
-                            wins: currUser.wins,
-                        }
-                    ])
-                       ,
-                    id: 0,
-                }));
-                let newRoom = new Room(currUser);
-                dataBase.rooms.push(newRoom)
-                let currRooms = dataBase.rooms.filter(Boolean).map(room => ({
-                    roomId:room.id,
-                    roomUsers:room.players.map(user => {
-                        if (user) return {
-                        name: user.name,
-                        index: user.id
-                    }})
-                }))
-                console.log(currRooms)
-                ws.send(JSON.stringify({
-                    type: "update_room",
-                    data: JSON.stringify(currRooms),
-                    id: 0,
-                }))
+                    data: winners
+                })
             } else {
                 ws.send(JSON.stringify({
                     type: "reg",
@@ -67,57 +52,49 @@ export const eventHandler = (ws:WebSocket, event:WsEvent) => {
         } else {
             let newUser = new User({name:name, password:password});
             dataBase.users.push(newUser);
-            console.log(newUser)
-            ws.send(JSON.stringify({
+            clientController.setClient(newUser.id, ws);
+            clientController.sendToClient(ws, {
                 type: "reg",
-                data: JSON.stringify({
+                data: {
                   name:name,
                   index: newUser.id,
                   error: false,
                   errorText: ''
-              }),
+              },
                 id: 0,
               })
-            )
-            console.log(JSON.stringify({
-                type: "update_winners",
-                data: JSON.stringify( [
-                    {
-                        name: newUser.name,
-                        wins: 0,
-                    }
-                ])
-                   ,
-                id: 0,
+              const winners = dataBase.users.map(currUser => ({
+                name: currUser.name,
+                wins: currUser.wins,
             }))
-            ws.send(JSON.stringify({
+              clientController.sendToAll({
                 type: "update_winners",
-                data: JSON.stringify( [
-                    {
-                        name: newUser.name,
-                        wins: 0,
-                    }
-                ])
-                   ,
-                id: 0,
-            }))
-            let newRoom = new Room(newUser);
+                data: winners
+            })
+        }
+        break
+
+        case 'create_room':
+            let userByClient = clientController.getClient(ws);
+            if (userByClient) {     
+            let newRoom = new Room(userByClient);
             dataBase.rooms.push(newRoom)
-            let currRooms = dataBase.rooms.filter(Boolean).map(room => ({
+            let currRooms = dataBase.rooms.map(room => ({
                 roomId:room.id,
-                roomUsers:room.players.map(user => {
-                    if (user) return {
+                roomUsers:room.players.filter(Boolean).map(user => {
+                    return {
                     name: user.name,
                     index: user.id
                 }})
             }))
-            console.log(currRooms)
-            ws.send(JSON.stringify({
+            clientController.sendToAll( {
                 type: "update_room",
-                data: JSON.stringify(currRooms),
+                data: currRooms,
                 id: 0,
-            }))
-        }        
+            })
+        }
+
         break
+            
     }
 }
