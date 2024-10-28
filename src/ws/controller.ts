@@ -21,10 +21,10 @@ export class Controller {
     });
   };
 
-  sendToRoom = (userIds: string[], payload: Record<string, unknown>) => {
-    userIds.forEach((id) => {
+  sendToRoom = (userIds: [string, string], payload: [Record<string, unknown>, Record<string, unknown>]) => {
+    userIds.forEach((id, ind) => {
       let currClient = this.clientsMap.get(id);
-      if (currClient) this.sendToClient(currClient, payload);
+      if (currClient) this.sendToClient(currClient, payload[ind]);
     });
   };
 

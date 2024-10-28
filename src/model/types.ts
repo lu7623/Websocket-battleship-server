@@ -4,15 +4,15 @@ import { User } from './user';
 
 export enum MessageType {
   reg = 'reg',
-  create_room = 'create_room',
-  add_user_to_room = 'add_user_to_room',
-  add_ships = 'add_ships',
+  createRoom = 'create_room',
+  addUserToRoom = 'add_user_to_room',
+  addShips = 'add_ships',
   attack = 'attack',
   finish = 'finish',
-  update_winners = 'update_winners',
-  update_room = 'update_room',
-  create_game = 'create_game',
-  start_game = 'start_game',
+  updateWinners = 'update_winners',
+  updateRoom = 'update_room',
+  createGame = 'create_game',
+  startGame = 'start_game',
   turn = 'turn',
 }
 
@@ -38,26 +38,40 @@ export type Position = {
   y: number;
 };
 
+export type ShipType = 'small' | 'medium' | 'large' | 'huge';
+
 export interface Ship {
-  health: number;
   position: Position;
   direction: boolean;
   length: number;
   type: string;
 }
 
+export interface Cell {
+  isShip: 1 | 0;
+  attacked: boolean;
+}
+
 export interface Player {
-  playerId: 1 | 0;
+  playerId: 0 | 1;
   user: User;
   ships: null | Ship[];
   playerBoard: null | Cell[][];
 }
 
-export interface Cell {
-  shipIndex: number;
-  fired: boolean;
-}
-
 export interface AddToRoom {
   indexRoom: number | string;
+}
+
+export interface AddShips {
+  gameId: string;
+  ships: [
+    {
+      position: Position;
+      direction: boolean;
+      length: number;
+      type: ShipType;
+    },
+  ];
+  indexPlayer: number;
 }

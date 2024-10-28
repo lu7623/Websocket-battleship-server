@@ -1,6 +1,6 @@
 import { dataBase } from 'src/model/database';
 import { Room } from 'src/model/room';
-import { AddToRoom, MessageType, UserData, WsEvent } from 'src/model/types';
+import { AddShips, AddToRoom, Cell, MessageType, UserData, WsEvent } from 'src/model/types';
 import { User } from 'src/model/user';
 import WebSocket from 'ws';
 import { Controller } from './controller';
@@ -13,7 +13,6 @@ export const eventHandler = (ws: WebSocket, event: WsEvent) => {
     case MessageType.reg:
       let { name, password } = event.data as UserData;
       let currUser = dataBase.users.find((user) => user.name === name);
-
       if (currUser) {
         if (currUser.password === password) {
           clientController.setClient(currUser.id, ws);
@@ -31,7 +30,7 @@ export const eventHandler = (ws: WebSocket, event: WsEvent) => {
             wins: currUser.wins,
           }));
           clientController.sendToAll({
-            type: MessageType.update_winners,
+            type: MessageType.updateWinners,
             data: winners,
           });
         } else {
@@ -63,13 +62,13 @@ export const eventHandler = (ws: WebSocket, event: WsEvent) => {
           wins: currUser.wins,
         }));
         clientController.sendToAll({
-          type: MessageType.update_winners,
+          type: MessageType.updateWinners,
           data: winners,
         });
       }
       break;
 
-    case MessageType.create_room:
+    case MessageType.createRoom:
       let userByClient = clientController.getClient(ws);
       if (userByClient) {
         let newRoom = new Room(userByClient);
@@ -84,14 +83,14 @@ export const eventHandler = (ws: WebSocket, event: WsEvent) => {
           }),
         }));
         clientController.sendToAll({
-          type: MessageType.update_room,
+          type: MessageType.updateRoom,
           data: currRooms,
         });
       }
 
       break;
 
-    case MessageType.add_user_to_room:
+    case MessageType.addUserToRoom:
       let { indexRoom } = event.data as AddToRoom;
       let player1 = clientController.getClient(ws);
       let player2 = dataBase.rooms.find((room) => room.id == indexRoom)?.players[0];
@@ -107,27 +106,84 @@ export const eventHandler = (ws: WebSocket, event: WsEvent) => {
           }),
         }));
         clientController.sendToAll({
-          type: MessageType.update_room,
+          type: MessageType.updateRoom,
           data: currRooms,
         });
         let newGame = new Game(player1, player2);
         dataBase.games.push(newGame);
-        let client2 = clientController.getClientById(player2.id);
-        client2 &&
-          clientController.sendToClient(client2, {
-            type: MessageType.create_game,
+        clientController.sendToRoom([player1.id, player2.id], [
+            {
+                type: MessageType.createGame,
+                data: {
+                  idGame: newGame.id,
+                  idPlayer: 0,
+                },
+              }, {
+                type: MessageType.createGame,
+                data: {
+                  idGame: newGame.id,
+                  idPlayer: 1,
+                },
+              }
+        ])
+       
+      } 
+      break
+
+      case MessageType.addShips: 
+      let shipInfo = event.data as AddShips;
+      let currGame = dataBase.games.find(game => game.id === shipInfo.gameId);
+     if (currGame){
+       let player = shipInfo.indexPlayer === 0 ? currGame.players[0] : currGame.players[1];
+       player.ships = shipInfo.ships;
+       let playerBoard:Cell[][] = Array.from(Array(10), () => new Array(10).fill({
+        isShip:  0,
+        attacked: false
+      }))
+
+      shipInfo.ships.forEach((ship) => {
+        let {x, y} = ship.position;
+        playerBoard[y][x] = {
+            isShip:  1,
+            attacked: false
+        }
+        if (ship.length>1 && ship.direction == false) {
+            for (let i=1; i<ship.length; i++){
+                playerBoard[y][x+i] = {
+                    isShip:  1,
+                    attacked: false
+                }
+            }
+        } else if (ship.length>1 && ship.direction === true) {
+            for (let i=1; i<ship.length; i++){
+                playerBoard[y+i][x] = {
+                    isShip:  1,
+                    attacked: false
+                }
+            }
+        }
+      })
+
+      console.log(playerBoard);
+      player.playerBoard = playerBoard;
+      if (currGame.players[0].playerBoard!==null &&  currGame.players[1].playerBoard!==null) {
+        let payload1 = {
+            type: MessageType.startGame,
             data: {
-              idGame: newGame.id,
-              idPlayer: 1,
+              ships: currGame.players[0].ships,
+              currentPlayerIndex: 0
             },
-          });
-        clientController.sendToClient(ws, {
-          type: MessageType.create_game,
-          data: {
-            idGame: newGame.id,
-            idPlayer: 0,
-          },
-        });
+          }
+          let payload2 ={
+            type: MessageType.startGame,
+            data: {
+              ships: currGame.players[1].ships,
+              currentPlayerIndex: 1
+            },
+          }
+        clientController.sendToRoom([currGame.players[0].user.id, currGame.players[1].user.id], [payload1, payload2]);
       }
+     } 
+     break
   }
 };
