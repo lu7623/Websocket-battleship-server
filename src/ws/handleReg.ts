@@ -11,38 +11,20 @@ export const handleReg = (
   ws: WebSocket
 ) => {
   let currUser = dataBase.users.find((user) => user.name === name);
-  if (currUser) {
-    if (currUser.password === password) {
-      clientController.setClient(currUser.id, ws);
-      clientController.sendToClient(ws, {
-        type: MessageType.reg,
-        data: {
-          name: name,
-          index: currUser.id,
-          error: false,
-          errorText: '',
-        },
-      });
-      const winners = dataBase.users.map((currUser) => ({
-        name: currUser.name,
-        wins: currUser.wins,
-      }));
-      clientController.sendToAll({
-        type: MessageType.updateWinners,
-        data: winners,
-      });
-    } else {
-      clientController.sendToClient(ws, {
-        type: MessageType.reg,
-        data: {
-          name: name,
-          index: currUser.id,
-          error: true,
-          errorText: 'Wrong password',
-        },
-      });
-    }
-  } else {
+  if (currUser && currUser.password !== password) {
+    clientController.sendToClient(ws, {
+      type: MessageType.reg,
+      data: {
+        name: name,
+        index: currUser.id,
+        error: true,
+        errorText: 'Wrong password',
+      },
+    });
+    return;
+  }
+
+  if (!currUser) {
     let newUser = new User({ name: name, password: password });
     dataBase.users.push(newUser);
     clientController.setClient(newUser.id, ws);
@@ -55,13 +37,42 @@ export const handleReg = (
         errorText: '',
       },
     });
-    const winners = dataBase.users.map((currUser) => ({
-      name: currUser.name,
-      wins: currUser.wins,
+  }
+
+  if (currUser && currUser.password === password) {
+    clientController.setClient(currUser.id, ws);
+    clientController.sendToClient(ws, {
+      type: MessageType.reg,
+      data: {
+        name: name,
+        index: currUser.id,
+        error: false,
+        errorText: '',
+      },
+    });
+  }
+
+  const winners = dataBase.users.map((currUser) => ({
+    name: currUser.name,
+    wins: currUser.wins,
+  }));
+  clientController.sendToAll({
+    type: MessageType.updateWinners,
+    data: winners,
+  });
+  if (dataBase.rooms.length > 0) {
+    let currRooms = dataBase.rooms.map((room) => ({
+      roomId: room.id,
+      roomUsers: room.players.map((user) => {
+        return {
+          name: user.name,
+          index: user.id,
+        };
+      }),
     }));
-    clientController.sendToAll({
-      type: MessageType.updateWinners,
-      data: winners,
+    clientController.sendToClient(ws, {
+      type: MessageType.updateRoom,
+      data: currRooms,
     });
   }
 };

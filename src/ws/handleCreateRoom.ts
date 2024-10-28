@@ -9,7 +9,7 @@ export const handleCreateRoom = (userByClient: User, clientController: Controlle
   dataBase.rooms.push(newRoom);
   let currRooms = dataBase.rooms.map((room) => ({
     roomId: room.id,
-    roomUsers: room.players.filter(Boolean).map((user) => {
+    roomUsers: room.players.map((user) => {
       return {
         name: user.name,
         index: user.id,
