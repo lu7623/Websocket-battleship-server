@@ -37,7 +37,7 @@ export const eventHandler = (ws: WebSocket, event: WsEvent) => {
       let { indexRoom } = event.data as AddToRoom;
       let player1 = clientController.getClient(ws);
       let player2 = dataBase.rooms.find((room) => room.id == indexRoom)?.players[0];
-      if (player1 && player2) handleAddUserToRoom(player1, player2, indexRoom, clientController);
+      if (player1 && player2 && player1!==player2) handleAddUserToRoom(player1, player2, indexRoom, clientController);
       break;
 
     case MessageType.addShips:
@@ -47,7 +47,10 @@ export const eventHandler = (ws: WebSocket, event: WsEvent) => {
 
     case MessageType.attack:
       let attack = event.data as Attack;
-      handleAttack(attack, clientController);
+      let findGame = dataBase.games.find((game) => game.id === attack.gameId);
+      if (findGame?.turn === attack.indexPlayer) {
+        handleAttack(attack, clientController);
+      }
       break;
 
     case MessageType.randomAttack:

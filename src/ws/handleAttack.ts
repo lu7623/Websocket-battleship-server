@@ -23,6 +23,7 @@ export const handleAttack = (attack: Attack, clientController: Controller) => {
             status: 'miss',
           },
         };
+        game.turn=attack.indexPlayer === 0 ? 1 : 0
         let turn = {
           type: MessageType.turn,
           data: {
@@ -122,6 +123,7 @@ export const handleAttack = (attack: Attack, clientController: Controller) => {
                 [attackRes, attackRes]
               );
             }
+            game.turn = attack.indexPlayer==0 ? 0 : 1;
             let turn = {
               type: MessageType.turn,
               data: {
