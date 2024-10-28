@@ -9,8 +9,8 @@ export class Game {
   constructor(player1: User, player2: User) {
     this.id = generateId();
     this.players = [
-      { playerId: 0, ships: null, playerBoard: null, user: player1 },
-      { playerId: 1, ships: null, playerBoard: null, user: player2 },
+      { playerId: 0, ships: null, playerBoard: null, user: player1, shipsKilled: 0 },
+      { playerId: 1, ships: null, playerBoard: null, user: player2, shipsKilled: 0 },
     ];
   }
 }

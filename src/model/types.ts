@@ -45,10 +45,11 @@ export interface Ship {
   direction: boolean;
   length: number;
   type: string;
+  points?: number;
 }
 
 export interface Cell {
-  isShip: 1 | 0;
+  shipNum: number;
   attacked: boolean;
 }
 
@@ -57,6 +58,7 @@ export interface Player {
   user: User;
   ships: null | Ship[];
   playerBoard: null | Cell[][];
+  shipsKilled: number;
 }
 
 export interface AddToRoom {
@@ -73,5 +75,12 @@ export interface AddShips {
       type: ShipType;
     },
   ];
+  indexPlayer: number;
+}
+
+export interface Attack {
+  gameId: string;
+  x: number;
+  y: number;
   indexPlayer: number;
 }

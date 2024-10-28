@@ -21,7 +21,10 @@ export class Controller {
     });
   };
 
-  sendToRoom = (userIds: [string, string], payload: [Record<string, unknown>, Record<string, unknown>]) => {
+  sendToRoom = (
+    userIds: [string, string],
+    payload: [Record<string, unknown>, Record<string, unknown>]
+  ) => {
     userIds.forEach((id, ind) => {
       let currClient = this.clientsMap.get(id);
       if (currClient) this.sendToClient(currClient, payload[ind]);
