@@ -14,6 +14,7 @@ export enum MessageType {
   createGame = 'create_game',
   startGame = 'start_game',
   turn = 'turn',
+  randomAttack = 'randomAttack',
 }
 
 export interface WsEvent {
@@ -62,7 +63,7 @@ export interface Player {
 }
 
 export interface AddToRoom {
-  indexRoom: number | string;
+  indexRoom: string;
 }
 
 export interface AddShips {
@@ -78,9 +79,12 @@ export interface AddShips {
   indexPlayer: number;
 }
 
-export interface Attack {
+export interface RandomAttack {
   gameId: string;
+  indexPlayer: number;
+}
+
+export interface Attack extends RandomAttack {
   x: number;
   y: number;
-  indexPlayer: number;
 }

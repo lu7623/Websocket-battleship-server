@@ -1,7 +1,7 @@
 import { WS_PORT } from 'src/constants/constants';
 import { WsEvent } from 'src/model/types';
 import { WebSocketServer } from 'ws';
-import { eventHandler } from './handler';
+import { eventHandler } from './eventHandler';
 import { parseMessage } from 'src/utils/parseMessage';
 
 export const wss = new WebSocketServer({ port: WS_PORT });
