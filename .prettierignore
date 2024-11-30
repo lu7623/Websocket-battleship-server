@@ -1,0 +1,6 @@
+front 
+
+**/.git
+**/.svn
+**/.hg
+**/node_modules
